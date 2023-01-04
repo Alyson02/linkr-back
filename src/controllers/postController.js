@@ -1,4 +1,4 @@
-import { createPost } from "../repositories/postRespository.js";
+import { createPost, listPosts } from "../repositories/postRespository.js";
 
 export async function create(req, res) {
   try {
@@ -6,7 +6,20 @@ export async function create(req, res) {
     post.userId = 1; // res.locals.user.id;
     console.log(post);
     await createPost(post);
-    res.send(201);
+    res.sendStatus(201);
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao criar post",
+      exception: error,
+    });
+  }
+}
+
+export async function list(req, res) {
+  try {
+    const posts = await listPosts();
+    res.send(posts);
   } catch (error) {
     res.status(500).send({
       success: false,
