@@ -8,7 +8,7 @@ let connectionParams = {
 };
 
 export default async function connectDB() {
-  if (chachedDB) {
+  if (chachedDB instanceof pg.Pool) {
     return chachedDB;
   }
 
