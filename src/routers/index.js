@@ -1,12 +1,8 @@
 import { Router } from "express";
-import connectDB from "../db.js";
+import postRouter from "./postRouter.js";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
-  const db = await connectDB();
-  const { rows } = await db.query("select * from hello");
-  res.send(rows);
-});
+router.use(postRouter);
 
 export default router;
