@@ -1,3 +1,4 @@
+import urlMetadata from "url-metadata";
 import { createPost, listPosts } from "../repositories/postRespository.js";
 
 export async function create(req, res) {
@@ -19,7 +20,32 @@ export async function create(req, res) {
 export async function list(req, res) {
   try {
     const posts = await listPosts();
-    res.send(posts);
+
+    const postsWithLinkMetaDatasUnresolved = posts.map(async (p) => {
+      const metadata = {};
+
+      const res = await urlMetadata(p.link);
+
+      metadata.title = res.title;
+      metadata.description = res.description;
+      metadata.image = res.image;
+      const url = p.link;
+      delete p.link;
+
+      return {
+        ...p,
+        link: {
+          url,
+          ...metadata,
+        },
+      };
+    });
+
+    const postsWithLinkMetaDatas = await Promise.all(
+      postsWithLinkMetaDatasUnresolved
+    );
+
+    res.send(postsWithLinkMetaDatas);
   } catch (error) {
     res.status(500).send({
       success: false,
