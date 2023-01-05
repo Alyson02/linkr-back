@@ -19,7 +19,8 @@
     "joi": "^17.7.0",
     "jsonwebtoken": "^8.5.1",
     "nanoid": "^4.0.0",
-    "pg": "^8.8.0"
+    "pg": "^8.8.0",
+    "url-metadata": "^2.5.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

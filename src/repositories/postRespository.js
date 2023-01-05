@@ -13,7 +13,7 @@ export async function createPost(post) {
 export async function listPosts() {
   return (
     await db.query(`
-      SELECT p.id, p.link, p.content, u."pictureUrl" 
+      SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username
       from posts p
       join users u on u.id = p."userId"
       order by p."createdAt" desc limit 20`)
