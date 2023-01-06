@@ -1,10 +1,9 @@
 import { Router } from "express";
 import { signIn } from "../controllers/authController.js"
-import validationMiddleware from "../middlewares/validationMiddleware.js";
-import models from "../models/index.js";
+import { signInModelValidation } from "../middlewares/authValidationMiddleware.js";
 
 const router = Router();
 
-router.post("/signin", validationMiddleware(models.signInPOST), signIn);
+router.post("/signin", signInModelValidation, signIn);
 
 export default router;
