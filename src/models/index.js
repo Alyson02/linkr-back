@@ -1,7 +1,8 @@
 import postModel from "./postModel.js";
+import { signInModel } from "./authModel.js";
 
 const models = {
-  postPOST: postModel,
+  postPOST: postModel
 };
 
 export default models;
