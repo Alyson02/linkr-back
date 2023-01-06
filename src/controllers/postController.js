@@ -4,9 +4,10 @@ import {
   addLike,
   createPost,
   getIfPostLikedByUser,
-  listPosts,
+  listPostsQuery,
   removeLike,
 } from "../repositories/postRespository.js";
+import { listPostsWithLinkMetadata } from "../services/postService.js";
 
 export async function create(req, res) {
   try {
@@ -36,41 +37,9 @@ export async function create(req, res) {
 
 export async function list(req, res) {
   try {
-    const posts = await listPosts();
-
-    const postsWithLinkMetaDatas = [];
-    for (let p of posts) {
-      const metadata = {};
-      const url = p.link;
-      delete p.link;
-
-      try {
-        const res = await urlMetadata(url);
-
-        metadata.title = res.title;
-        metadata.description = res.description;
-        metadata.image = res.image;
-
-        const liked = (await getIfPostLikedByUser(p.id, p.userId)).length > 0;
-
-        postsWithLinkMetaDatas.push({
-          ...p,
-          liked,
-          link: {
-            url,
-            ...metadata,
-            success: true,
-          },
-        });
-      } catch (error) {
-        postsWithLinkMetaDatas.push({
-          ...p,
-          link: { url, success: false, liked },
-        });
-      }
-    }
-
-    res.send(postsWithLinkMetaDatas);
+    const user = { id: 1 };
+    const posts = await listPostsQuery();
+    res.send(await listPostsWithLinkMetadata(user, posts));
   } catch (error) {
     res.status(500).send({
       success: false,
