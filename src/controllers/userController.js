@@ -46,3 +46,11 @@ export async function getUser(req, res) {
     }
 
 }
+
+export function searchUser(req, res) {
+
+    const { users } = res.locals
+    
+    res.send(users)
+
+}

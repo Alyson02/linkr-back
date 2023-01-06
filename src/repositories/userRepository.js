@@ -21,3 +21,13 @@ export async function getUserQuery(id) {
         ORDER BY p."createdAt" DESC`, [id])
     )
 }
+
+export async function validationUserNameQuery(name) {
+    return (
+        db.query(`
+        SELECT *
+        FROM users
+        WHERE LOWER(username) LIKE LOWER($1)
+        `, [`${name}%`])
+    )
+}

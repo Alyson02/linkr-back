@@ -1,4 +1,4 @@
-import { validationUserQuery } from "../repositories/userRepository.js";
+import { validationUserNameQuery, validationUserQuery } from "../repositories/userRepository.js";
 
 export async function validationUser(req, res, next) {
 
@@ -14,13 +14,42 @@ export async function validationUser(req, res, next) {
         }
 
         res.locals.user = result[0]
-        console.log(result[0])
+
         next()
 
     } catch (err) {
         res.status(500).send({
             success: false,
             message: "Erro ao buscar usuário",
+            exception: err
+        });
+    }
+
+}
+
+export async function validationUserName(req, res, next) {
+
+    let { name } = req.params
+
+    // name = name.toLowerCase()
+
+    try {
+
+        const result = (await validationUserNameQuery(name)).rows
+
+        if (result.length === 0) {
+            res.sendStatus(404)
+            return
+        }
+
+        res.locals.users = result
+
+        next()
+
+    } catch (err) {
+        res.status(500).send({
+            success: false,
+            message: "Erro ao buscar usuários",
             exception: err
         });
     }
