@@ -10,7 +10,7 @@ export async function createPost(post) {
   ]);
 }
 
-export async function listPosts() {
+export async function listPostsQuery() {
   return (
     await db.query(`
       SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes
