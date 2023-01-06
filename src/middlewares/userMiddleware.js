@@ -31,8 +31,6 @@ export async function validationUserName(req, res, next) {
 
     let { name } = req.params
 
-    // name = name.toLowerCase()
-
     try {
 
         const result = (await validationUserNameQuery(name)).rows
