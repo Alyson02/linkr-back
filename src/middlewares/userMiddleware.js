@@ -13,6 +13,8 @@ export async function validationUser(req, res, next) {
             return
         }
 
+        res.locals.user = result[0]
+        console.log(result[0])
         next()
 
     } catch (err) {
