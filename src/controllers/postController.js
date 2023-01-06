@@ -63,7 +63,10 @@ export async function list(req, res) {
           },
         });
       } catch (error) {
-        postsWithLinkMetaDatas.push({ ...p, link: { url, success: false } });
+        postsWithLinkMetaDatas.push({
+          ...p,
+          link: { url, success: false, liked },
+        });
       }
     }
 
@@ -89,7 +92,7 @@ export async function likeOrDislike(req, res) {
     } else {
       await removeLike(userId, postId);
     }
-    
+
     return res.sendStatus(200);
   } catch (error) {
     res.status(500).send({
