@@ -4,8 +4,7 @@ dotenv.config();
 
 let chachedDB = null;
 let connectionParams = {
-  connectionString: process.env.DATABASE_URL,
-  ssl: true
+  connectionString: process.env.DATABASE_URL
 };
 
 export default async function connectDB() {
