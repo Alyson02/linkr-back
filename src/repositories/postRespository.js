@@ -21,7 +21,14 @@ export async function listPosts() {
       order by p."createdAt" desc limit 20`)
   ).rows;
 }
-
+export async function findPost(postId) {
+  return (
+    await db.query(`
+      SELECT * FROM posts
+      WHERE id = $1
+      `,[postId])
+  ).rows;
+}
 export async function getIfPostLikedByUser(postId, userId) {
   return (
     await db.query(
@@ -42,5 +49,18 @@ export async function removeLike(userId, postId) {
   await db.query(
     `DELETE FROM "postLikes" WHERE "postId" = $1 and "userId" = $2`,
     [postId, userId]
+  );
+}
+export async function removeAllLikes(postId) {
+  await db.query(
+    `DELETE FROM "postLikes" WHERE "postId" = $1`,
+    [postId]
+  );
+}
+
+export async function deletePost(postId) {
+  await db.query(
+    `DELETE FROM "posts" WHERE id = $1`,
+    [postId]
   );
 }
