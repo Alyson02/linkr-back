@@ -41,6 +41,7 @@ export async function list(req, res) {
     const posts = await listPostsQuery();
     res.send(await listPostsWithLinkMetadata(user, posts));
   } catch (error) {
+    console.log(error)
     res.status(500).send({
       success: false,
       message: "Erro ao listar posts",
