@@ -12,14 +12,14 @@ export async function listPostsWithLinkMetadata(user, posts) {
     const url = p.link;
     delete p.link;
 
+    const liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
+
     try {
       const res = await urlMetadata(url);
 
       metadata.title = res.title;
       metadata.description = res.description;
       metadata.image = res.image;
-
-      const liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
 
       postsWithLinkMetaDatas.push({
         ...p,
