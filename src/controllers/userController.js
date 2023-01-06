@@ -7,6 +7,8 @@ export async function getUser(req, res) {
 
         const { id } = req.params
 
+        const { user } = res.locals
+
         const posts = (await getUserQuery(id)).rows
 
         const postsWithLinkMetaDatasUnresolved = posts.map(async (p) => {
@@ -33,7 +35,7 @@ export async function getUser(req, res) {
             postsWithLinkMetaDatasUnresolved
         );
 
-        res.send(postsWithLinkMetaDatas)
+        res.send({ user, posts: postsWithLinkMetaDatas })
 
     } catch (err) {
         res.status(500).send({
