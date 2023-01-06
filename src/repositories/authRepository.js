@@ -1,7 +1,8 @@
-import { connection } from "../database/database.js";
+import connectDB from "../db.js";
+
 
 async function findUser(email) {
-	return connection.query(
+	return connectDB().query(
         "SELECT * FROM users WHERE email=$1",
         [email]
     );
