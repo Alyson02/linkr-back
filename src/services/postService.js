@@ -33,7 +33,8 @@ export async function listPostsWithLinkMetadata(user, posts) {
     } catch (error) {
       postsWithLinkMetaDatas.push({
         ...p,
-        link: { url, success: false, liked },
+        liked,
+        link: { url, success: false },
       });
     }
   }
