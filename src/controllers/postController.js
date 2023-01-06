@@ -1,6 +1,12 @@
 import urlMetadata from "url-metadata";
 import { insertHashTag } from "../repositories/hashtagRepository.js";
-import { createPost, listPosts } from "../repositories/postRespository.js";
+import {
+  addLike,
+  createPost,
+  getIfPostLikedByUser,
+  listPosts,
+  removeLike,
+} from "../repositories/postRespository.js";
 
 export async function create(req, res) {
   try {
@@ -45,8 +51,11 @@ export async function list(req, res) {
         metadata.description = res.description;
         metadata.image = res.image;
 
+        const liked = (await getIfPostLikedByUser(p.id, p.userId)).length > 0;
+
         postsWithLinkMetaDatas.push({
           ...p,
+          liked,
           link: {
             url,
             ...metadata,
@@ -63,6 +72,29 @@ export async function list(req, res) {
     res.status(500).send({
       success: false,
       message: "Erro ao listar posts",
+      exception: error,
+    });
+  }
+}
+
+export async function likeOrDislike(req, res) {
+  try {
+    const { postId } = req.params;
+    const userId = 1; //res.locals.user.id;
+
+    const liked = await getIfPostLikedByUser(postId, userId);
+
+    if (liked.length === 0) {
+      await addLike(userId, postId);
+    } else {
+      await removeLike(userId, postId);
+    }
+    
+    return res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao interagir com o post",
       exception: error,
     });
   }
