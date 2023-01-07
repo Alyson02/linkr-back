@@ -12,7 +12,7 @@ import { listPostsWithLinkMetadata } from "../services/postService.js";
 export async function create(req, res) {
   try {
     const post = req.body;
-    post.userId = 1; // res.locals.user.id;
+    post.userId = res.locals.user.id;
 
     var regexp = /\B\#\w\w+\b/g;
     const hashtags = post.content.match(regexp);
@@ -41,7 +41,6 @@ export async function list(req, res) {
     const posts = await listPostsQuery();
     res.send(await listPostsWithLinkMetadata(user, posts));
   } catch (error) {
-    console.log(error)
     res.status(500).send({
       success: false,
       message: "Erro ao listar posts",
@@ -53,7 +52,7 @@ export async function list(req, res) {
 export async function likeOrDislike(req, res) {
   try {
     const { postId } = req.params;
-    const userId = 1; //res.locals.user.id;
+    const userId = res.locals.user.id;
 
     const liked = await getIfPostLikedByUser(postId, userId);
 
@@ -64,6 +63,17 @@ export async function likeOrDislike(req, res) {
     }
 
     return res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao interagir com o post",
+      exception: error,
+    });
+  }
+}
+
+export async function usersLikedPosts() {
+  try {
   } catch (error) {
     res.status(500).send({
       success: false,
