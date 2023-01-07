@@ -44,3 +44,32 @@ export async function removeLike(userId, postId) {
     [postId, userId]
   );
 }
+
+export async function selectUsersLikedPost(postId, userId) {
+  return (
+    await db.query(
+      `
+      SELECT u.username, u.id
+      FROM "postLikes" l 
+      JOIN users u on u.id = l."userId" 
+      WHERE l."postId" = $1 and l."userId" <> $2
+      LIMIT 2`,
+      [postId, userId]
+    )
+  ).rows;
+}
+
+export async function numberLikes(postId, usersId) {
+  const offset = 2;
+  const placeholders = usersId
+    .map(function (u, i) {
+      return "$" + (i + offset);
+    })
+    .join(",");
+  return (
+    await db.query(
+      `SELECT COUNT(*) as "likes" FROM "postLikes" l WHERE l."postId" = $1 and l."userId" not in (${placeholders})`,
+      [postId, ...usersId]
+    )
+  ).rows[0].likes;
+}

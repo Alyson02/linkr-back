@@ -5,7 +5,9 @@ import {
   createPost,
   getIfPostLikedByUser,
   listPostsQuery,
+  numberLikes,
   removeLike,
+  selectUsersLikedPost,
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -37,7 +39,7 @@ export async function create(req, res) {
 
 export async function list(req, res) {
   try {
-    const user = { id: 1 };
+    const user = res.locals.user;
     const posts = await listPostsQuery();
     res.send(await listPostsWithLinkMetadata(user, posts));
   } catch (error) {
@@ -63,17 +65,6 @@ export async function likeOrDislike(req, res) {
     }
 
     return res.sendStatus(200);
-  } catch (error) {
-    res.status(500).send({
-      success: false,
-      message: "Erro ao interagir com o post",
-      exception: error,
-    });
-  }
-}
-
-export async function usersLikedPosts() {
-  try {
   } catch (error) {
     res.status(500).send({
       success: false,

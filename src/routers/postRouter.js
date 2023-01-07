@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { create, likeOrDislike, list } from "../controllers/postController.js";
+import {
+  create,
+  likeOrDislike,
+  list,
+} from "../controllers/postController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import validationMiddleware from "../middlewares/validationMiddleware.js";
 import models from "../models/index.js";

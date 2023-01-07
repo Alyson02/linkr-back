@@ -1,6 +1,6 @@
 import {
   getIfPostLikedByUser,
-  listPostsQuery,
+  selectUsersLikedPost,
 } from "../repositories/postRespository.js";
 import urlMetadata from "url-metadata";
 
@@ -13,6 +13,7 @@ export async function listPostsWithLinkMetadata(user, posts) {
     delete p.link;
 
     const liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
+    const peoples = await selectUsersLikedPost(p.id, user.id);
 
     try {
       const res = await urlMetadata(url);
@@ -24,6 +25,7 @@ export async function listPostsWithLinkMetadata(user, posts) {
       postsWithLinkMetaDatas.push({
         ...p,
         liked,
+        peoples,
         link: {
           url,
           ...metadata,
@@ -34,6 +36,7 @@ export async function listPostsWithLinkMetadata(user, posts) {
       postsWithLinkMetaDatas.push({
         ...p,
         liked,
+        peoples,
         link: { url, success: false },
       });
     }
