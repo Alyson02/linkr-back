@@ -3,6 +3,8 @@ import { signInModel } from "../models/authModel.js";
 import { findUser } from "../repositories/authRepository.js";
 import { validationUserQuery } from "../repositories/userRepository.js";
 import jwt from "jsonwebtoken";
+import dotenv from 'dotenv'
+dotenv.config()
 
 export async function signInModelValidation(req, res, next) {
   const { email, password } = req.body;
