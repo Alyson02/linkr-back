@@ -2,55 +2,50 @@ import urlMetadata from "url-metadata";
 import { getUserQuery } from "../repositories/userRepository.js";
 
 export async function getUser(req, res) {
+  try {
+    const { id } = req.params;
 
-    try {
+    const { user } = res.locals;
 
-        const { id } = req.params
+    const posts = (await getUserQuery(id)).rows;
 
-        const { user } = res.locals
+    const postsWithLinkMetaDatasUnresolved = posts.map(async (p) => {
+      const metadata = {};
 
-        const posts = (await getUserQuery(id)).rows
+      const res = await urlMetadata(p.link);
 
-        const postsWithLinkMetaDatasUnresolved = posts.map(async (p) => {
-            const metadata = {};
+      metadata.title = res.title;
+      metadata.description = res.description;
+      metadata.image = res.image;
+      const url = p.link;
+      delete p.link;
 
-            const res = await urlMetadata(p.link);
+      return {
+        ...p,
+        link: {
+          url,
+          ...metadata,
+        },
+      };
+    });
 
-            metadata.title = res.title;
-            metadata.description = res.description;
-            metadata.image = res.image;
-            const url = p.link;
-            delete p.link;
+    const postsWithLinkMetaDatas = await Promise.all(
+      postsWithLinkMetaDatasUnresolved
+    );
 
-            return {
-                ...p,
-                link: {
-                    url,
-                    ...metadata,
-                },
-            }
-        })
-
-        const postsWithLinkMetaDatas = await Promise.all(
-            postsWithLinkMetaDatasUnresolved
-        );
-
-        res.send({ user, posts: postsWithLinkMetaDatas })
-
-    } catch (err) {
-        res.status(500).send({
-            success: false,
-            message: "Erro ao buscar posts do usuário",
-            exception: err
-        });
-    }
-
+    res.send({ user, posts: postsWithLinkMetaDatas });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({
+      success: false,
+      message: "Erro ao buscar posts do usuário",
+      exception: err,
+    });
+  }
 }
 
 export function searchUser(req, res) {
+  const { users } = res.locals;
 
-    const { users } = res.locals
-    
-    res.send(users)
-
+  res.send(users);
 }
