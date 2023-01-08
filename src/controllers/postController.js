@@ -43,7 +43,7 @@ export async function create(req, res) {
 export async function delPost(req, res) {
   try {
     let {id} = req.params;
-    let userId = 2//TERMINAR APÓS A CRIAÇÃO DA AUTENTICAÇÃO
+    let userId = res.locals.user.id;
     let query = await findPost(id)
 
     if(query.length===0){
@@ -108,9 +108,11 @@ export async function likeOrDislike(req, res) {
 export async function editPost(req,res){
   try {
     const {postId} = req.params;
-    let userId = 7;
+    let userId = res.locals.user.id;
     let content = req.body.content === undefined ? '' : req.body.content ;
+    console.log(content); 
     const post = await findPost(postId);
+
     if(post.length===0){
       res.sendStatus(404);
     }
@@ -121,8 +123,8 @@ export async function editPost(req,res){
       await removeHashtagsFromPost(postId);
 
       var regexp = /\B\#\w\w+\b/g;
-      const hashtags = content?.match(regexp);
-      
+      const hashtags = content.match(regexp);
+
       if (hashtags) {
         hashtags.forEach(async (h) => {
           console.log(h);
@@ -137,12 +139,12 @@ export async function editPost(req,res){
           
         });
       }
-  
       await updatePost(postId,content);
 
       res.sendStatus(202);
     }
   } catch (error) {
+    console.log(error)
     res.status(500).send({
       success: false,
       message: "Erro ao editar post",
