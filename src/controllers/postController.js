@@ -1,6 +1,4 @@
-import { query } from "express";
-import urlMetadata from "url-metadata";
-import { insertHashTag } from "../repositories/hashtagRepository.js";
+import { insertHashTag,removeHashtagsFromPost,findHashtag,insertPostHashtag } from "../repositories/hashtagRepository.js";
 import {
   addLike,
   createPost,
@@ -11,6 +9,7 @@ import {
   findPost,
   deletePost,
   removeAllLikes,
+  updatePost,
   selectUsersLikedPost
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
@@ -44,7 +43,7 @@ export async function create(req, res) {
 export async function delPost(req, res) {
   try {
     let {id} = req.params;
-    let userId = 2//TERMINAR APÓS A CRIAÇÃO DA AUTENTICAÇÃO
+    let userId = res.locals.user.id;
     let query = await findPost(id)
 
     if(query.length===0){
@@ -101,6 +100,54 @@ export async function likeOrDislike(req, res) {
     res.status(500).send({
       success: false,
       message: "Erro ao interagir com o post",
+      exception: error,
+    });
+  }
+}
+
+export async function editPost(req,res){
+  try {
+    const {postId} = req.params;
+    let userId = res.locals.user.id;
+    let content = req.body.content === undefined ? '' : req.body.content ;
+    console.log(content); 
+    const post = await findPost(postId);
+
+    if(post.length===0){
+      res.sendStatus(404);
+    }
+    else if(userId !== post[0].userId){
+      res.sendStatus(401);
+    }
+    else{
+      await removeHashtagsFromPost(postId);
+
+      var regexp = /\B\#\w\w+\b/g;
+      const hashtags = content.match(regexp);
+
+      if (hashtags) {
+        hashtags.forEach(async (h) => {
+          console.log(h);
+          let hashtag = await findHashtag(h);
+          
+          if(hashtag.length === 0){
+            await insertHashTag(h);
+            hashtag = await findHashtag(h);
+          }
+
+          await insertPostHashtag(postId,hashtag[0].id)
+          
+        });
+      }
+      await updatePost(postId,content);
+
+      res.sendStatus(202);
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({
+      success: false,
+      message: "Erro ao editar post",
       exception: error,
     });
   }

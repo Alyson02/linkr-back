@@ -93,3 +93,10 @@ export async function numberLikes(postId, usersId) {
     )
   ).rows[0].likes;
 }
+
+export async function updatePost(postId,content) {
+  await db.query(
+    `UPDATE "posts" p SET content = $1 WHERE p.id = $2`,
+    [content,postId]
+  );
+}
