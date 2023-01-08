@@ -9,25 +9,21 @@ dotenv.config()
 export async function signInModelValidation(req, res, next) {
   const { email, password } = req.body;
 
-  const user = {
-    email,
-    password,
-  };
-
-  const { error } = signInModel.validate(user, { abortEarly: false });
+  const { error } = signInModel.validate(req.body, { abortEarly: false });
   if (error) {
     const errors = error.details.map((detail) => detail.message);
     return res.status(422).send(errors);
   }
 
   try {
-    const userExists = await findUser(email);
-    if (
-      userExists &&
-      bcrypt.compareSync(user.password, userExists.rows[0].password)
-    ) {
-      delete userExists.password;
-      res.locals.user = userExists.rows[0];
+    const { rows: users } = await findUser(email);
+    const [user] = users;
+    if (!user) {
+      return res.sendStatus(401);
+    }
+    if (bcrypt.compareSync(password, user.password)) {
+      delete user.password;
+      res.locals.user = user;
     } else {
       return res.sendStatus(401);
     }
