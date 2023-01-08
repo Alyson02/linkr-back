@@ -4,6 +4,6 @@ import authValidation from "../middlewares/authValidationMiddleware.js";
 
 const router = Router();
 
-router.get("/signin", authValidation, getHashtag);
+router.get("/hashtag", authValidation, getHashtag);
 
 export default router;
