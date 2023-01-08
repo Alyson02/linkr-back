@@ -4,6 +4,7 @@ import {
   create,
   likeOrDislike,
   list,
+  delPost
 } from "../controllers/postController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import validationMiddleware from "../middlewares/validationMiddleware.js";
@@ -20,5 +21,6 @@ postRouter.post(
 postRouter.get("/posts", authMiddleware, list);
 postRouter.post("/like-or-dislike/:postId", authMiddleware, likeOrDislike);
 postRouter.get("/hashtag/:hashtag",getPostsByHashtag);
+postRouter.delete("/post/:id", delPost);
 
 export default postRouter;

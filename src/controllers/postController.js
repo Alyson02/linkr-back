@@ -1,3 +1,4 @@
+import { query } from "express";
 import urlMetadata from "url-metadata";
 import { insertHashTag } from "../repositories/hashtagRepository.js";
 import {
@@ -7,7 +8,10 @@ import {
   listPostsQuery,
   numberLikes,
   removeLike,
-  selectUsersLikedPost,
+  findPost,
+  deletePost,
+  removeAllLikes,
+  selectUsersLikedPost
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -32,6 +36,34 @@ export async function create(req, res) {
     res.status(500).send({
       success: false,
       message: "Erro ao criar post",
+      exception: error,
+    });
+  }
+}
+
+export async function delPost(req, res) {
+  try {
+    let {id} = req.params;
+    let userId = 2//TERMINAR APÓS A CRIAÇÃO DA AUTENTICAÇÃO
+    let query = await findPost(id)
+
+    if(query.length===0){
+      res.sendStatus(404);
+    }
+    else if(userId !== query[0].userId){
+      res.sendStatus(401);
+    }
+    else{
+      await removeAllLikes(id);
+      await deletePost(id);
+      res.sendStatus(200);
+    }
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({
+      success: false,
+      message: "Erro ao deletar post",
       exception: error,
     });
   }
