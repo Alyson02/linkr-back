@@ -10,7 +10,7 @@ export async function createPost(post) {
   ]);
 }
 
-export async function listPosts() {
+export async function listPostsQuery() {
   return (
     await db.query(`
       SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes
@@ -63,4 +63,33 @@ export async function deletePost(postId) {
     `DELETE FROM "posts" WHERE id = $1`,
     [postId]
   );
+}
+
+export async function selectUsersLikedPost(postId, userId) {
+  return (
+    await db.query(
+      `
+      SELECT u.username, u.id
+      FROM "postLikes" l 
+      JOIN users u on u.id = l."userId" 
+      WHERE l."postId" = $1 and l."userId" <> $2
+      LIMIT 2`,
+      [postId, userId]
+    )
+  ).rows;
+}
+
+export async function numberLikes(postId, usersId) {
+  const offset = 2;
+  const placeholders = usersId
+    .map(function (u, i) {
+      return "$" + (i + offset);
+    })
+    .join(",");
+  return (
+    await db.query(
+      `SELECT COUNT(*) as "likes" FROM "postLikes" l WHERE l."postId" = $1 and l."userId" not in (${placeholders})`,
+      [postId, ...usersId]
+    )
+  ).rows[0].likes;
 }

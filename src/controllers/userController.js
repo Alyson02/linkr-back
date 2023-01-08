@@ -1,48 +1,29 @@
-import urlMetadata from "url-metadata";
 import { getUserQuery } from "../repositories/userRepository.js";
+import { listPostsWithLinkMetadata } from "../services/postService.js";
 
 export async function getUser(req, res) {
+  try {
+    const { id } = req.params;
 
-    try {
+    const { user } = res.locals;
+    console.log(user);
 
-        const { id } = req.params
+    const posts = (await getUserQuery(id)).rows;
 
-        const { user } = res.locals
+    const postsWithLinkMetaData = await listPostsWithLinkMetadata(user, posts);
 
-        const posts = (await getUserQuery(id)).rows
+    res.send({ user, posts: postsWithLinkMetaData });
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao buscar posts do usuário",
+      exception: err,
+    });
+  }
+}
 
-        const postsWithLinkMetaDatasUnresolved = posts.map(async (p) => {
-            const metadata = {};
+export function searchUser(req, res) {
+  const { users } = res.locals;
 
-            const res = await urlMetadata(p.link);
-
-            metadata.title = res.title;
-            metadata.description = res.description;
-            metadata.image = res.image;
-            const url = p.link;
-            delete p.link;
-
-            return {
-                ...p,
-                link: {
-                    url,
-                    ...metadata,
-                },
-            }
-        })
-
-        const postsWithLinkMetaDatas = await Promise.all(
-            postsWithLinkMetaDatasUnresolved
-        );
-
-        res.send({ user, posts: postsWithLinkMetaDatas })
-
-    } catch (err) {
-        res.status(500).send({
-            success: false,
-            message: "Erro ao buscar posts do usuário",
-            exception: err
-        });
-    }
-
+  res.send(users);
 }
