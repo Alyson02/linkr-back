@@ -1,4 +1,13 @@
-import { getHashtag } from "../repositories/hashtagRepository.js";
+import { getHashtag, listHashtags } from "../repositories/hashtagRepository.js";
+
+export async function getHashtagList(req, res) {
+  try {
+    const hashtagList = await listHashtags();
+    res.status(200).send(hashtagList.rows);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+}
 
 export async function getPostsByHashtag(req, res) {
   try {
