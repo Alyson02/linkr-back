@@ -22,7 +22,8 @@ export async function listHashtags() {
 }
 
 export async function listHashtagPosts(id) {
-  return db.query(`
+  return db.query(
+    `
     SELECT
       p.id,
       p.link,
@@ -50,28 +51,43 @@ export async function listHashtagPosts(id) {
       p.id, u.id
     ORDER BY
       p."createdAt" DESC
-  `, [id]);
+  `,
+    [id]
+  );
 }
 
 export async function insertHashTag(hashtag) {
   await db.query(`INSERT INTO hashtags VALUES(default, $1)`, [hashtag]);
 }
 export async function getHashtag(hashtag) {
-  return (await db.query(`SELECT * FROM hashtags WHERE name = $1`,[hashtag])).rows;
+  return (await db.query(`SELECT * FROM hashtags WHERE name = $1`, [hashtag]))
+    .rows;
 }
 
-export async function getPostsByHashtag(hashtagId){
-  return (await db.query('SELECT p.* FROM posts JOIN "postHashtags" ph ON p.id = ph."postId" WHERE ph."hashtagId" = $1',[hashtagId])).rows;
+export async function getPostsByHashtag(hashtagId) {
+  return (
+    await db.query(
+      'SELECT p.* FROM posts JOIN "postHashtags" ph ON p.id = ph."postId" WHERE ph."hashtagId" = $1',
+      [hashtagId]
+    )
+  ).rows;
 }
 
-export async function removeHashtagsFromPost(postId){
-  await db.query('DELETE FROM "postsHashtags" ph WHERE ph."postId" = $1',[postId])
+export async function removeHashtagsFromPost(postId) {
+  await db.query('DELETE FROM "postsHashtags" ph WHERE ph."postId" = $1', [
+    postId,
+  ]);
 }
 
-export async function findHashtag(hashtagName){
-  return (await db.query('SELECT * FROM hashtags h WHERE h.name = $1',[hashtagName])).rows
+export async function findHashtag(hashtagName) {
+  return (
+    await db.query("SELECT * FROM hashtags h WHERE h.name = $1", [hashtagName])
+  ).rows[0];
 }
 
-export async function insertPostHashtag(postId,hashtagId){
-  await db.query(`INSERT INTO "posthashtags" VALUES(default, $1,$2)`, [postId,hashtagId]);
+export async function insertPostHashtag(postId, hashtagId) {
+  await db.query(`INSERT INTO "postsHashtags" VALUES(default, $1,$2)`, [
+    postId,
+    hashtagId,
+  ]);
 }

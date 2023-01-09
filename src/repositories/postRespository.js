@@ -23,10 +23,13 @@ export async function listPostsQuery() {
 }
 export async function findPost(postId) {
   return (
-    await db.query(`
+    await db.query(
+      `
       SELECT * FROM posts
       WHERE id = $1
-      `,[postId])
+      `,
+      [postId]
+    )
   ).rows;
 }
 export async function getIfPostLikedByUser(postId, userId) {
@@ -52,17 +55,11 @@ export async function removeLike(userId, postId) {
   );
 }
 export async function removeAllLikes(postId) {
-  await db.query(
-    `DELETE FROM "postLikes" WHERE "postId" = $1`,
-    [postId]
-  );
+  await db.query(`DELETE FROM "postLikes" WHERE "postId" = $1`, [postId]);
 }
 
 export async function deletePost(postId) {
-  await db.query(
-    `DELETE FROM "posts" WHERE id = $1`,
-    [postId]
-  );
+  await db.query(`DELETE FROM "posts" WHERE id = $1`, [postId]);
 }
 
 export async function selectUsersLikedPost(postId, userId) {
@@ -94,9 +91,18 @@ export async function numberLikes(postId, usersId) {
   ).rows[0].likes;
 }
 
-export async function updatePost(postId,content) {
-  await db.query(
-    `UPDATE "posts" p SET content = $1 WHERE p.id = $2`,
-    [content,postId]
-  );
+export async function updatePost(postId, content) {
+  await db.query(`UPDATE "posts" p SET content = $1 WHERE p.id = $2`, [
+    content,
+    postId,
+  ]);
+}
+
+export async function getLasPostByUser(userId) {
+  return await (
+    await db.query(
+      `SELECT id FROM posts WHERE "userId" = $1 ORDER BY id DESC LIMIT 1`,
+      [userId]
+    )
+  ).rows[0];
 }
