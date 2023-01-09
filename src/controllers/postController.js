@@ -1,4 +1,9 @@
-import { insertHashTag,removeHashtagsFromPost,findHashtag,insertPostHashtag } from "../repositories/hashtagRepository.js";
+import {
+  insertHashTag,
+  removeHashtagsFromPost,
+  findHashtag,
+  insertPostHashtag,
+} from "../repositories/hashtagRepository.js";
 import {
   addLike,
   createPost,
@@ -10,7 +15,8 @@ import {
   deletePost,
   removeAllLikes,
   updatePost,
-  selectUsersLikedPost
+  selectUsersLikedPost,
+  getLasPostByUser,
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -22,13 +28,23 @@ export async function create(req, res) {
     var regexp = /\B\#\w\w+\b/g;
     const hashtags = post.content.match(regexp);
 
-    if (hashtags) {
-      hashtags.forEach(async (h) => {
-        await insertHashTag(h);
-      });
-    }
-
     await createPost(post);
+    const lasPostByUser = await getLasPostByUser(res.locals.user.id);
+
+    if (hashtags) {
+      for (let h of hashtags) {
+        let hashtagExist = await findHashtag(h);
+
+        if (hashtagExist) {
+          await insertPostHashtag(lasPostByUser.id, hashtagExist.id);
+          continue;
+        } else {
+          await insertHashTag(h);
+          let hashTagInserted = await findHashtag(h);
+          await insertPostHashtag(lasPostByUser.id, hashTagInserted.id);
+        }
+      }
+    }
 
     res.sendStatus(201);
   } catch (error) {
@@ -42,24 +58,21 @@ export async function create(req, res) {
 
 export async function delPost(req, res) {
   try {
-    let {id} = req.params;
+    let { id } = req.params;
     let userId = res.locals.user.id;
-    let query = await findPost(id)
+    let query = await findPost(id);
 
-    if(query.length===0){
+    if (query.length === 0) {
       res.sendStatus(404);
-    }
-    else if(userId !== query[0].userId){
+    } else if (userId !== query[0].userId) {
       res.sendStatus(401);
-    }
-    else{
+    } else {
       await removeAllLikes(id);
       await deletePost(id);
       res.sendStatus(200);
     }
-
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).send({
       success: false,
       message: "Erro ao deletar post",
@@ -105,21 +118,19 @@ export async function likeOrDislike(req, res) {
   }
 }
 
-export async function editPost(req,res){
+export async function editPost(req, res) {
   try {
-    const {postId} = req.params;
+    const { postId } = req.params;
     let userId = res.locals.user.id;
-    let content = req.body.content === undefined ? '' : req.body.content ;
-    console.log(content); 
+    let content = req.body.content === undefined ? "" : req.body.content;
+    console.log(content);
     const post = await findPost(postId);
 
-    if(post.length===0){
+    if (post.length === 0) {
       res.sendStatus(404);
-    }
-    else if(userId !== post[0].userId){
+    } else if (userId !== post[0].userId) {
       res.sendStatus(401);
-    }
-    else{
+    } else {
       await removeHashtagsFromPost(postId);
 
       var regexp = /\B\#\w\w+\b/g;
@@ -129,22 +140,21 @@ export async function editPost(req,res){
         hashtags.forEach(async (h) => {
           console.log(h);
           let hashtag = await findHashtag(h);
-          
-          if(hashtag.length === 0){
+
+          if (hashtag.length === 0) {
             await insertHashTag(h);
             hashtag = await findHashtag(h);
           }
 
-          await insertPostHashtag(postId,hashtag[0].id)
-          
+          await insertPostHashtag(postId, hashtag[0].id);
         });
       }
-      await updatePost(postId,content);
+      await updatePost(postId, content);
 
       res.sendStatus(202);
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).send({
       success: false,
       message: "Erro ao editar post",
