@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getPostsByHashtag } from "../controllers/hashtagController.js";
+import { getHashtagPost } from "../controllers/hashtagController.js";
 import {
   create,
   likeOrDislike,
@@ -21,7 +21,7 @@ postRouter.post(
 );
 postRouter.get("/posts", authMiddleware, list);
 postRouter.post("/like-or-dislike/:postId", authMiddleware, likeOrDislike);
-postRouter.get("/hashtag/:hashtag",getPostsByHashtag);
+postRouter.get("/hashtag/:hashtag",getHashtagPost);
 postRouter.delete("/post/:id", authMiddleware,delPost);
 postRouter.put("/post/:postId",authMiddleware,editPost);
 

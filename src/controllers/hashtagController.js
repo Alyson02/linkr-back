@@ -1,4 +1,4 @@
-import { getHashtag, listHashtags } from "../repositories/hashtagRepository.js";
+import { listHashtags, getHashtag, getPostsByHashtag } from "../repositories/hashtagRepository.js";
 
 export async function getHashtagList(req, res) {
   try {
@@ -9,7 +9,7 @@ export async function getHashtagList(req, res) {
   }
 }
 
-export async function getPostsByHashtag(req, res) {
+export async function getHashtagPost(req, res) {
   try {
     const { hashtag } = req.params;
     const hashTag = await getHashtag(hashtag);
