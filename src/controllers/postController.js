@@ -123,7 +123,6 @@ export async function editPost(req, res) {
     const { postId } = req.params;
     let userId = res.locals.user.id;
     let content = req.body.content === undefined ? "" : req.body.content;
-    console.log(content);
     const post = await findPost(postId);
 
     if (post.length === 0) {
@@ -138,9 +137,7 @@ export async function editPost(req, res) {
 
       if (hashtags) {
         hashtags.forEach(async (h) => {
-          console.log(h);
           let hashtag = await findHashtag(h);
-
           if (hashtag.length === 0) {
             await insertHashTag(h);
             hashtag = await findHashtag(h);

@@ -67,7 +67,14 @@ export async function getHashtag(hashtag) {
 export async function getPostsByHashtag(hashtagId) {
   return (
     await db.query(
-      'SELECT p.* FROM posts JOIN "postHashtags" ph ON p.id = ph."postId" WHERE ph."hashtagId" = $1',
+      `SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes
+      from posts p
+      JOIN "postsHashtags" ph ON p.id = ph."postId"
+      join users u on u.id = p."userId"
+      left join "postLikes" l on l."postId" = p.id
+      WHERE ph."hashId" = $1
+      group by p.id, u.id
+      order by p."createdAt" desc limit 20`,
       [hashtagId]
     )
   ).rows;
