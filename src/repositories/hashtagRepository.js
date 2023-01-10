@@ -65,7 +65,6 @@ export async function getHashtag(hashtag) {
 }
 
 export async function getPostsByHashtag(hashtagId) {
-  console.log(hashtagId);
   return (
     await db.query(
       `SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes
