@@ -140,7 +140,7 @@ export async function editPost(req, res) {
         hashtags.forEach(async (h) => {
           console.log(h);
           let hashtag = await findHashtag(h);
-
+          console.log(hashtag);
           if (hashtag.length === 0) {
             await insertHashTag(h);
             hashtag = await findHashtag(h);

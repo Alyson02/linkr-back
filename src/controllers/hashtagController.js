@@ -1,4 +1,5 @@
 import { listHashtags, getHashtag, getPostsByHashtag } from "../repositories/hashtagRepository.js";
+import { listPostsWithLinkMetadata } from "../services/postService.js";
 
 export async function getHashtagList(req, res) {
   try {
@@ -12,16 +13,15 @@ export async function getHashtagList(req, res) {
 export async function getHashtagPost(req, res) {
   try {
     const { hashtag } = req.params;
-    const hashTag = await getHashtag(hashtag);
+    const hashTag = await getHashtag('#'+hashtag);
     if(hashTag.length === 0){
         return res.sendStatus(404);
     }
     else{
-        const posts = await getPostsByHashtag(hashTag.id);
-        res.status(200).send(posts);
+        const user = res.locals.user;
+        const posts = await getPostsByHashtag(hashTag[0].id);
+        return res.status(200).send(await listPostsWithLinkMetadata(user, posts));
     }
-
-    return res.sendStatus(200);
   } catch (error) {
     console.log(error);
     res.status(500).send({
