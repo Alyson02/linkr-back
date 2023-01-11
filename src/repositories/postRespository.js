@@ -13,10 +13,11 @@ export async function createPost(post) {
 export async function listPostsQuery() {
   return (
     await db.query(`
-      SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes
+      SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes, COUNT(c."postId") as comments
       from posts p
       join users u on u.id = p."userId"
       left join "postLikes" l on l."postId" = p.id
+      left join comments c on c."postId" = p.id
       group by p.id, u.id
       order by p."createdAt" desc limit 20`)
   ).rows;
