@@ -107,3 +107,9 @@ export async function getLasPostByUser(userId) {
     )
   ).rows[0];
 }
+
+export async function postCommentQuery(postId, user, comment) {
+  return db.query(`
+  INSERT INTO comments (comment, "postId", "userId") VALUES ($1, $2, $3)
+  `, [comment, postId, user.id])
+}

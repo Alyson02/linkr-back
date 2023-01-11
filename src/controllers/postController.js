@@ -17,6 +17,7 @@ import {
   updatePost,
   selectUsersLikedPost,
   getLasPostByUser,
+  postCommentQuery,
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -158,4 +159,30 @@ export async function editPost(req, res) {
       exception: error,
     });
   }
+}
+
+export async function postComment(req, res) {
+
+  const { user } = res.locals
+  const { id } = req.params
+  const { comment } = req.body
+
+  try {
+
+    const post = await findPost(id)
+
+    if (post.length === 0) {
+      return res.sendStatus(404)
+    } else {
+      await postCommentQuery(id, user, comment)
+    }
+
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao postar comentário",
+      exception: err,
+    });
+  }
+
 }
