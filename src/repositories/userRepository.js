@@ -34,3 +34,27 @@ export async function validationUserNameQuery(name) {
     [`${name}%`]
   );
 }
+
+export async function getFollowQuery(user, id) {
+  return db.query(`
+    SELECT *
+    FROM follows
+    WHERE "userFollowingId"=$1
+    AND "userFollowedId"=$2
+  `, [user.id, id])
+}
+
+export async function followUserQuery(user, id) {
+  return db.query(`
+  INSERT INTO follows
+  ("userFollowingId", "userFollowedId") VALUES ($1, $2)
+  `, [user.id, id])
+}
+
+export async function unfollowUserQuery(user, id) {
+  return db.query(`
+  DELETE FROM follows
+  WHERE "userFollowingId"=$1
+  AND "userFollowedId"=$2
+  `, [user.id, id])
+}

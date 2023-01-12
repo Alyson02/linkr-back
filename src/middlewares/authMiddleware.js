@@ -4,38 +4,44 @@ import jwt from "jsonwebtoken";
 import { validationUserQuery } from "../repositories/userRepository.js";
 
 export default async function authMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    return res.status(401).send({ message: "Token não informado!" });
-  }
+  try {
+    const authHeader = req.headers.authorization;
 
-  const parts = authHeader.split(" ");
+    if (!authHeader) {
+      return res.status(401).send({ message: "Token não informado!" });
+    }
 
-  if (parts.length !== 2) {
-    return res.status(401).send({ message: "Token invalido!" });
-  }
+    const parts = authHeader.split(" ");
 
-  const [scheme, token] = parts;
-
-  if (!/^Bearer$/i.test(scheme)) {
-    return res.status(401).send({ message: "Token deve ser do tipo Bearer" });
-  }
-
-  jwt.verify(token, process.env.SECRET, async (err, decoded) => {
-    if (err) {
-      console.error(err);
+    if (parts.length !== 2) {
       return res.status(401).send({ message: "Token invalido!" });
     }
 
-    const user = (await validationUserQuery(decoded.id)).rows[0];
+    const [scheme, token] = parts;
 
-    if (!user) {
-      return res.status(401).send({ message: "Token invalido!" });
+    if (!/^Bearer$/i.test(scheme)) {
+      return res.status(401).send({ message: "Token deve ser do tipo Bearer" });
     }
 
-    res.locals.user = user;
+    jwt.verify(token, process.env.SECRET, async (err, decoded) => {
+      if (err) {
+        console.error(err);
+        return res.status(401).send({ message: "Token invalido!" });
+      }
 
-    return next();
-  });
+      const user = (await validationUserQuery(decoded.id)).rows[0];
+
+      if (!user) {
+        return res.status(401).send({ message: "Token invalido!" });
+      }
+
+      res.locals.user = user;
+
+      return next();
+    });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+
 }
