@@ -4,11 +4,13 @@ import { listPostsWithLinkMetadata } from "../services/postService.js";
 export async function getUser(req, res) {
   try {
     const { id } = req.params;
+    const page = Number(req.query.page);
+    const limit = Number(req.query.limit);
 
     const { user } = res.locals;
     console.log(user);
 
-    const posts = (await getUserQuery(id)).rows;
+    const posts = (await getUserQuery(id, page, limit)).rows;
 
     const postsWithLinkMetaData = await listPostsWithLinkMetadata(user, posts);
 
