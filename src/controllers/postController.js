@@ -18,6 +18,7 @@ import {
   selectUsersLikedPost,
   getLasPostByUser,
   postCommentQuery,
+  countPosts
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -185,4 +186,19 @@ export async function postComment(req, res) {
     });
   }
 
+}
+
+export async function count(req,res){
+  try {
+    const numPosts = await countPosts();
+    return res.status(200).send({numPosts:numPosts.rows[0].num})
+  }
+  catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      success: false,
+      message: "Erro ao pegar numero de posts",
+      exception: err,
+    });
+  }
 }

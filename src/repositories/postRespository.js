@@ -113,3 +113,9 @@ export async function postCommentQuery(postId, user, comment) {
   INSERT INTO comments (comment, "postId", "userId") VALUES ($1, $2, $3)
   `, [comment, postId, user.id])
 }
+
+export async function countPosts(){
+  return db.query(`
+    SELECT count(id) as num FROM posts
+  `)
+}
