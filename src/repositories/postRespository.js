@@ -10,7 +10,7 @@ export async function createPost(post) {
   ]);
 }
 
-export async function listPostsQuery() {
+export async function listPostsQuery(usersIds) {
   return (
     await db.query(`
       SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes, COUNT(c."postId") as comments
@@ -18,8 +18,9 @@ export async function listPostsQuery() {
       join users u on u.id = p."userId"
       left join "postLikes" l on l."postId" = p.id
       left join comments c on c."postId" = p.id
+      where u.id = ANY ($1)
       group by p.id, u.id
-      order by p."createdAt" desc limit 20`)
+      order by p."createdAt" desc limit 20`,[usersIds])
   ).rows;
 }
 export async function findPost(postId) {
@@ -75,6 +76,20 @@ export async function selectUsersLikedPost(postId, userId) {
       [postId, userId]
     )
   ).rows;
+}
+
+export async function selectUsersFollowing(userId){
+  return (
+    await db.query(
+      `
+        SELECT "userFollowerId", string_agg("userFollowedId"::text ,' , ') as followeds  FROM follows f
+        JOIN users u ON u.id = f."userFollowedId"
+        WHERE f."userFollowerId" = $1
+        group by "userFollowerId" ;
+      `,
+      [userId]
+    )
+  ).rows[0]?.followeds;
 }
 
 export async function numberLikes(postId, usersId) {

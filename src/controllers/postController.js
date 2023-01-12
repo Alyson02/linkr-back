@@ -18,6 +18,7 @@ import {
   selectUsersLikedPost,
   getLasPostByUser,
   postCommentQuery,
+  selectUsersFollowing,
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -85,9 +86,12 @@ export async function delPost(req, res) {
 export async function list(req, res) {
   try {
     const user = res.locals.user;
-    const posts = await listPostsQuery();
-    res.send(await listPostsWithLinkMetadata(user, posts));
+    let following = await selectUsersFollowing(user.id);
+    following = JSON.parse("[" + following + "]");
+    const posts = await listPostsQuery(following)
+    res.send({posts:await listPostsWithLinkMetadata(user, posts),following:following});
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       success: false,
       message: "Erro ao listar posts",
@@ -95,6 +99,7 @@ export async function list(req, res) {
     });
   }
 }
+
 
 export async function likeOrDislike(req, res) {
   try {
