@@ -9,7 +9,6 @@ import {
   createPost,
   getIfPostLikedByUser,
   listPostsQuery,
-  numberLikes,
   removeLike,
   findPost,
   deletePost,
@@ -86,7 +85,9 @@ export async function delPost(req, res) {
 export async function list(req, res) {
   try {
     const user = res.locals.user;
-    const posts = await listPostsQuery();
+    const page = Number(req.query.page);
+    const limit = Number(req.query.limit);
+    const posts = await listPostsQuery(page, limit);
     res.send(await listPostsWithLinkMetadata(user, posts));
   } catch (error) {
     res.status(500).send({
