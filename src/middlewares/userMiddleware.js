@@ -31,9 +31,11 @@ export async function validationUserName(req, res, next) {
 
     let { name } = req.params
 
+    let { user } = res.locals
+
     try {
 
-        const result = (await validationUserNameQuery(name)).rows
+        const result = (await validationUserNameQuery(name, user)).rows
 
         if (result.length === 0) {
             res.sendStatus(404)

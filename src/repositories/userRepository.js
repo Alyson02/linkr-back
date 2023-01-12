@@ -24,14 +24,17 @@ export async function getUserQuery(id) {
   );
 }
 
-export async function validationUserNameQuery(name) {
+export async function validationUserNameQuery(name, user) {
   return db.query(
     `
-        SELECT *
+        SELECT users.id, users.username, users."pictureUrl", follows.id AS "following"
         FROM users
-        WHERE LOWER(username) LIKE LOWER($1)
+        FULL OUTER JOIN follows
+        ON users.id = follows."userFollowedId"
+        WHERE LOWER(users.username) LIKE LOWER($1)
+        AND (follows."userFollowerId"=$2 OR follows."userFollowedId" IS NULL);
         `,
-    [`${name}%`]
+    [`${name}%`, Number(user.id)]
   );
 }
 
@@ -39,7 +42,7 @@ export async function getFollowQuery(user, id) {
   return db.query(`
     SELECT *
     FROM follows
-    WHERE "userFollowingId"=$1
+    WHERE "userFollowerId"=$1
     AND "userFollowedId"=$2
   `, [user.id, id])
 }
@@ -47,14 +50,14 @@ export async function getFollowQuery(user, id) {
 export async function followUserQuery(user, id) {
   return db.query(`
   INSERT INTO follows
-  ("userFollowingId", "userFollowedId") VALUES ($1, $2)
+  ("userFollowerId", "userFollowedId") VALUES ($1, $2)
   `, [user.id, id])
 }
 
 export async function unfollowUserQuery(user, id) {
   return db.query(`
   DELETE FROM follows
-  WHERE "userFollowingId"=$1
+  WHERE "userFollowerId"=$1
   AND "userFollowedId"=$2
   `, [user.id, id])
 }
