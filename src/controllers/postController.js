@@ -16,8 +16,9 @@ import {
   removeAllLikes,
   updatePost,
   selectUsersLikedPost,
-  getLasPostByUser,
+  getLastPostByUser,
   postCommentQuery,
+  insertRepost,
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -30,7 +31,7 @@ export async function create(req, res) {
     const hashtags = post.content.match(regexp);
 
     await createPost(post);
-    const lasPostByUser = await getLasPostByUser(res.locals.user.id);
+    const lasPostByUser = await getLastPostByUser(res.locals.user.id);
 
     if (hashtags) {
       for (let h of hashtags) {
@@ -162,21 +163,18 @@ export async function editPost(req, res) {
 }
 
 export async function postComment(req, res) {
-
-  const { user } = res.locals
-  const { id } = req.params
-  const { comment } = req.body
+  const { user } = res.locals;
+  const { id } = req.params;
+  const { comment } = req.body;
 
   try {
-
-    const post = await findPost(id)
+    const post = await findPost(id);
 
     if (post.length === 0) {
-      return res.sendStatus(404)
+      return res.sendStatus(404);
     } else {
-      await postCommentQuery(id, user, comment)
+      await postCommentQuery(id, user, comment);
     }
-
   } catch (err) {
     res.status(500).send({
       success: false,
@@ -184,5 +182,26 @@ export async function postComment(req, res) {
       exception: err,
     });
   }
+}
 
+export async function repost(req, res) {
+  try {
+    const { user } = res.locals;
+    const { postId } = req.params;
+
+    const originalPost = (await findPost(postId))[0];
+    originalPost.userId = user.id;
+    await createPost(originalPost);
+    const newPost = await getLastPostByUser(user.id);
+
+    await insertRepost(originalPost.id, newPost.id, user.id);
+
+    return res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao realizar repost",
+      exception: err,
+    });
+  }
 }

@@ -13,11 +13,20 @@ export async function createPost(post) {
 export async function listPostsQuery() {
   return (
     await db.query(`
-      SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes, COUNT(c."postId") as comments
+      SELECT 
+        p.id, p.link,
+        p.content,
+        u."pictureUrl" as "userImage", 
+        u.username, 
+        p."userId", 
+        COUNT(l."postId") as likes, 
+        COUNT(c."postId") as comments,
+        COUNT(r."postId") as reposts
       from posts p
       join users u on u.id = p."userId"
       left join "postLikes" l on l."postId" = p.id
       left join comments c on c."postId" = p.id
+      left join reposts r on r."postId" = p.id
       group by p.id, u.id
       order by p."createdAt" desc limit 20`)
   ).rows;
@@ -55,6 +64,7 @@ export async function removeLike(userId, postId) {
     [postId, userId]
   );
 }
+
 export async function removeAllLikes(postId) {
   await db.query(`DELETE FROM "postLikes" WHERE "postId" = $1`, [postId]);
 }
@@ -99,7 +109,7 @@ export async function updatePost(postId, content) {
   ]);
 }
 
-export async function getLasPostByUser(userId) {
+export async function getLastPostByUser(userId) {
   return await (
     await db.query(
       `SELECT id FROM posts WHERE "userId" = $1 ORDER BY id DESC LIMIT 1`,
@@ -109,7 +119,27 @@ export async function getLasPostByUser(userId) {
 }
 
 export async function postCommentQuery(postId, user, comment) {
-  return db.query(`
+  return db.query(
+    `
   INSERT INTO comments (comment, "postId", "userId") VALUES ($1, $2, $3)
-  `, [comment, postId, user.id])
+  `,
+    [comment, postId, user.id]
+  );
+}
+
+export async function insertRepost(orginalPostId, postId, userId) {
+  await db.query(`INSERT INTO reposts values (default, $1, $2, $3)`, [
+    postId,
+    userId,
+    orginalPostId,
+  ]);
+}
+
+export async function getIfPostIsRepost(postId, userId) {
+  return (
+    await db.query(
+      `SELECT * FROM reposts WHERE "postId" = $1 and "userId" = $2`,
+      [postId, userId]
+    )
+  ).rows;
 }
