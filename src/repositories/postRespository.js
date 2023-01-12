@@ -110,7 +110,7 @@ export async function getLasPostByUser(userId) {
 
 export async function getCommentList(postId) {
   return db.query(`
-    SELECT c.comment, u.id, u.username, u."pictureUrl"
+    SELECT c.comment, u.id as "userId", u.username, u."pictureUrl"
     FROM comments c
     JOIN users u
       ON u.id=c."userId"
