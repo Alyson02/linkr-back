@@ -180,32 +180,7 @@ export async function getComment(req, res) {
   } catch (err) {
     res.status(500).send({
       success: false,
-      message: "Erro ao postar comentário",
-      exception: err,
-    });
-  }
-
-}
-
-export async function getComment(req, res) {
-
-  const { user } = res.locals
-  const { id } = req.params
-
-  try {
-    const post = await findPost(id)
-
-    if (post.length === 0) {
-      return res.sendStatus(404);
-    } else {
-      await postCommentQuery(id, user, comment);
-      res.sendStatus(200);
-    }
-
-  } catch (err) {
-    res.status(500).send({
-      success: false,
-      message: "Erro ao postar comentário",
+      message: "Erro ao obter comentário",
       exception: err,
     });
   }
