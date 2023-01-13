@@ -1,8 +1,12 @@
 import {
+  findPost,
+  findPostFull,
+  getIfPostIsRepost,
   getIfPostLikedByUser,
   selectUsersLikedPost,
 } from "../repositories/postRespository.js";
 import urlMetadata from "url-metadata";
+import { validationUserQuery } from "../repositories/userRepository.js";
 
 export async function listPostsWithLinkMetadata(user, posts) {
   const postsWithLinkMetaDatas = [];
@@ -12,8 +16,18 @@ export async function listPostsWithLinkMetadata(user, posts) {
     const url = p.link;
     delete p.link;
 
-    const liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
+    let liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
     const peoples = await selectUsersLikedPost(p.id, user.id);
+
+    let repost = await getIfPostIsRepost(p.id, p.userId);
+    const reposted = repost.length > 0;
+    repost = repost[0];
+
+    if (reposted) {
+      const originalPost = await findPostFull(repost.originalPostId);
+      p = originalPost[0];
+      liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
+    }
 
     try {
       const res = await urlMetadata(url);
@@ -31,12 +45,16 @@ export async function listPostsWithLinkMetadata(user, posts) {
           ...metadata,
           success: true,
         },
+        reposted,
+        repost,
       });
     } catch (error) {
       postsWithLinkMetaDatas.push({
         ...p,
         liked,
         peoples,
+        reposted,
+        repost,
         link: { url, success: false },
       });
     }

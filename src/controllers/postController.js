@@ -14,10 +14,12 @@ import {
   deletePost,
   removeAllLikes,
   updatePost,
-  getLasPostByUser,
-  getCommentList,
+  selectUsersLikedPost,
+  getLastPostByUser,
   postCommentQuery,
-  selectUsersFollowing,
+  insertRepost,
+  getCommentList,
+  selectUsersFollowing
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -30,7 +32,7 @@ export async function create(req, res) {
     const hashtags = post.content.match(regexp);
 
     await createPost(post);
-    const lasPostByUser = await getLasPostByUser(res.locals.user.id);
+    const lasPostByUser = await getLastPostByUser(res.locals.user.id);
 
     if (hashtags) {
       for (let h of hashtags) {
@@ -210,6 +212,28 @@ export async function postComment(req, res) {
     res.status(500).send({
       success: false,
       message: "Erro ao postar comentário",
+      exception: err,
+    });
+  }
+}
+
+export async function repost(req, res) {
+  try {
+    const { user } = res.locals;
+    const { postId } = req.params;
+
+    const originalPost = (await findPost(postId))[0];
+    originalPost.userId = user.id;
+    await createPost(originalPost);
+    const newPost = await getLastPostByUser(user.id);
+
+    await insertRepost(originalPost.id, newPost.id, user.id);
+
+    return res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao realizar repost",
       exception: err,
     });
   }
