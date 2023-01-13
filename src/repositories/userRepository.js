@@ -27,17 +27,16 @@ export async function getUserQuery(id, page = 1, limit = 10) {
   );
 }
 
-export async function validationUserNameQuery(name, user) {
+export async function validationUserNameQuery(name) {
   return db.query(
     `
-        SELECT users.id, users.username, users."pictureUrl", follows.id AS "following"
+        SELECT users.id, users.username, users."pictureUrl", follows."userFollowerId" AS "following"
         FROM users
         FULL OUTER JOIN follows
         ON users.id = follows."userFollowedId"
-        WHERE LOWER(users.username) LIKE LOWER($1)
-        AND (follows."userFollowerId"=$2 OR follows."userFollowedId" IS NULL);
+        WHERE LOWER(users.username) LIKE LOWER($1);
         `,
-    [`${name}%`, Number(user.id)]
+    [`${name}%`]
   );
 }
 

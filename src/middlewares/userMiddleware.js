@@ -35,7 +35,16 @@ export async function validationUserName(req, res, next) {
 
     try {
 
-        const result = (await validationUserNameQuery(name, user)).rows
+        let result = (await validationUserNameQuery(name, user)).rows
+
+        // console.log(user)
+        // console.log('-------------------')
+        // console.log(result)
+        // console.log('-------------------')
+
+        result.map(r => Number(r.following) !== Number(user.id) ? r.following = null : '')
+
+        // console.log(result)
 
         if (result.length === 0) {
             res.sendStatus(404)
