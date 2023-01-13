@@ -49,14 +49,6 @@ export async function getFollowQuery(user, id) {
   `, [user.id, id])
 }
 
-export async function getFollowedList(id) {
-  return db.query(`
-    SELECT array_agg("userFollowedId") AS followed
-    FROM follows
-    WHERE "userFollowerId"=$1
-  `, [id])
-}
-
 export async function followUserQuery(user, id) {
   return db.query(`
   INSERT INTO follows
