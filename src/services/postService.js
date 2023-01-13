@@ -1,4 +1,6 @@
 import {
+  findPost,
+  findPostFull,
   getIfPostIsRepost,
   getIfPostLikedByUser,
   selectUsersLikedPost,
@@ -14,12 +16,18 @@ export async function listPostsWithLinkMetadata(user, posts) {
     const url = p.link;
     delete p.link;
 
-    const liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
+    let liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
     const peoples = await selectUsersLikedPost(p.id, user.id);
 
-    let repost = await getIfPostIsRepost(p.id, user.id);
+    let repost = await getIfPostIsRepost(p.id, p.userId);
     const reposted = repost.length > 0;
     repost = repost[0];
+
+    if (reposted) {
+      const originalPost = await findPostFull(repost.originalPostId);
+      p = originalPost[0];
+      liked = (await getIfPostLikedByUser(p.id, user.id)).length > 0;
+    }
 
     try {
       const res = await urlMetadata(url);

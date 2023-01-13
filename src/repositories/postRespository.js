@@ -13,7 +13,8 @@ export async function createPost(post) {
 export async function listPostsQuery(page = 1, limit = 10) {
   const offset = limit * page - limit;
   return (
-    await db.query(`
+    await db.query(
+      `
       SELECT 
         p.id, p.link,
         p.content,
@@ -27,13 +28,40 @@ export async function listPostsQuery(page = 1, limit = 10) {
       join users u on u.id = p."userId"
       left join "postLikes" l on l."postId" = p.id
       left join comments c on c."postId" = p.id
-      left join reposts r on r."postId" = p.id
+      left join reposts r on r."originalPostId" = p.id
       group by p.id, u.id
       order by p."createdAt" desc limit $1 offset $2`,
       [limit, offset]
     )
   ).rows;
 }
+export async function findPostFull(postId) {
+  return (
+    await db.query(
+      `
+      SELECT 
+        p.id, p.link,
+        p.content,
+        u."pictureUrl" as "userImage", 
+        u.username, 
+        p."userId", 
+        COUNT(l."postId") as likes, 
+        COUNT(c."postId") as comments,
+        COUNT(r."postId") as reposts
+      from posts p
+      join users u on u.id = p."userId"
+      left join "postLikes" l on l."postId" = p.id
+      left join comments c on c."postId" = p.id
+      left join reposts r on r."originalPostId" = p.id
+      WHERE p.id = $1
+      group by p.id, u.id
+      LIMIT 1
+      `,
+      [postId]
+    )
+  ).rows;
+}
+
 export async function findPost(postId) {
   return (
     await db.query(
@@ -45,6 +73,7 @@ export async function findPost(postId) {
     )
   ).rows;
 }
+
 export async function getIfPostLikedByUser(postId, userId) {
   return (
     await db.query(
@@ -141,7 +170,10 @@ export async function insertRepost(orginalPostId, postId, userId) {
 export async function getIfPostIsRepost(postId, userId) {
   return (
     await db.query(
-      `SELECT * FROM reposts WHERE "postId" = $1 and "userId" = $2`,
+      `SELECT r.*, u.username
+       FROM reposts r
+       JOIN users u ON u.id = r."userId"
+       WHERE "postId" = $1 and "userId" = $2`,
       [postId, userId]
     )
   ).rows;
