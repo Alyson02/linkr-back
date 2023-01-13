@@ -20,7 +20,7 @@ import {
   insertRepost,
   getCommentList,
   selectUsersFollowing,
-  countPosts
+  countPosts,
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -91,10 +91,15 @@ export async function list(req, res) {
 
     let following = await selectUsersFollowing(user.id);
     following = JSON.parse("[" + following + "]");
+    let arr = following;
+    arr.push(user.id);
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
-    const posts = await listPostsQuery(following, page, limit)
-    res.send({posts:await listPostsWithLinkMetadata(user, posts),following:following});
+    const posts = await listPostsQuery(arr, page, limit);
+    res.send({
+      posts: await listPostsWithLinkMetadata(user, posts),
+      following: following,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -104,7 +109,6 @@ export async function list(req, res) {
     });
   }
 }
-
 
 export async function likeOrDislike(req, res) {
   try {
@@ -172,19 +176,17 @@ export async function editPost(req, res) {
 }
 
 export async function getComment(req, res) {
-
   const { id } = req.params;
 
   try {
     const post = await findPost(id);
 
     if (post.length === 0) {
-      return res.sendStatus(404)
+      return res.sendStatus(404);
     } else {
       const commentList = await getCommentList(id);
       res.status(200).send(commentList.rows);
     }
-
   } catch (err) {
     res.status(500).send({
       success: false,
@@ -192,7 +194,6 @@ export async function getComment(req, res) {
       exception: err,
     });
   }
-
 }
 
 export async function postComment(req, res) {
@@ -240,12 +241,11 @@ export async function repost(req, res) {
   }
 }
 
-export async function count(req,res){
+export async function count(req, res) {
   try {
     const numPosts = await countPosts();
-    return res.status(200).send({numPosts:numPosts.rows[0].num})
-  }
-  catch (err) {
+    return res.status(200).send({ numPosts: numPosts.rows[0].num });
+  } catch (err) {
     console.log(err);
     return res.status(500).send({
       success: false,
