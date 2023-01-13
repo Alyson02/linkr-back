@@ -37,14 +37,15 @@ export async function validationUserName(req, res, next) {
 
         let result = (await validationUserNameQuery(name, user)).rows
 
-        // console.log(user)
-        // console.log('-------------------')
-        // console.log(result)
-        // console.log('-------------------')
+        function compare (a, b) {
+            if (a.following > b.following)
+                return -1;
+            if (a.following < b.following)
+                return 1;
+            return 0;
+        }
 
-        result.map(r => Number(r.following) !== Number(user.id) ? r.following = null : '')
-
-        // console.log(result)
+        result.sort(compare);
 
         if (result.length === 0) {
             res.sendStatus(404)
