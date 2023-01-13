@@ -164,7 +164,6 @@ export async function editPost(req, res) {
 
 export async function getComment(req, res) {
 
-  const { user } = res.locals;
   const { id } = req.params;
 
   try {
