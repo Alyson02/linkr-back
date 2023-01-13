@@ -1,4 +1,10 @@
-import { followUserQuery, getFollowQuery, getUserQuery, unfollowUserQuery } from "../repositories/userRepository.js";
+import { selectUsersFollowing } from "../repositories/postRespository.js";
+import {
+  followUserQuery,
+  getFollowQuery,
+  getUserQuery,
+  unfollowUserQuery,
+} from "../repositories/userRepository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
 export async function getUser(req, res) {
@@ -8,14 +14,18 @@ export async function getUser(req, res) {
     const limit = Number(req.query.limit);
 
     const { user } = res.locals;
-    console.log(id)
+
+    let following = await selectUsersFollowing(user.id);
+
+    if (following === undefined) following = "";
+    
+    following = JSON.parse("[" + following + "]");
 
     const posts = (await getUserQuery(id, page, limit)).rows;
-    console.log(posts)
 
     const postsWithLinkMetaData = await listPostsWithLinkMetadata(user, posts);
 
-    res.send({ user, posts: postsWithLinkMetaData });
+    res.send({ user, posts: postsWithLinkMetaData, following });
   } catch (err) {
     res.status(500).send({
       success: false,
@@ -32,23 +42,20 @@ export function searchUser(req, res) {
 }
 
 export async function followUser(req, res) {
+  const { user } = res.locals;
 
-  const { user } = res.locals
-
-  const { id } = req.params
+  const { id } = req.params;
 
   try {
-
-    const follow = (await getFollowQuery(user, id)).rows
+    const follow = (await getFollowQuery(user, id)).rows;
 
     if (follow.length === 0) {
-      await followUserQuery(user, id)
+      await followUserQuery(user, id);
     } else {
-      await unfollowUserQuery(user, id)
+      await unfollowUserQuery(user, id);
     }
 
-    res.sendStatus(200)
-
+    res.sendStatus(200);
   } catch (err) {
     res.status(500).send({
       success: false,
@@ -56,29 +63,25 @@ export async function followUser(req, res) {
       exception: err,
     });
   }
-
 }
 
 export async function getFollow(req, res) {
+  const { user } = res.locals;
 
-  const { user } = res.locals
+  const { id } = req.params;
 
-  const { id } = req.params
-
-  let resultado
+  let resultado;
 
   try {
-
-    const follow = (await getFollowQuery(user, id)).rows
+    const follow = (await getFollowQuery(user, id)).rows;
 
     if (follow.length === 0) {
-      resultado = false
+      resultado = false;
     } else {
-      resultado = true
+      resultado = true;
     }
 
-    res.status(200).send({ follow: resultado })
-
+    res.status(200).send({ follow: resultado });
   } catch (err) {
     res.status(500).send({
       success: false,
@@ -86,5 +89,4 @@ export async function getFollow(req, res) {
       exception: err,
     });
   }
-
 }

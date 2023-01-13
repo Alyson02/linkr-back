@@ -90,6 +90,9 @@ export async function list(req, res) {
     const user = res.locals.user;
 
     let following = await selectUsersFollowing(user.id);
+
+    if(following === undefined)  following = "";
+
     following = JSON.parse("[" + following + "]");
     let arr = following;
     arr.push(user.id);

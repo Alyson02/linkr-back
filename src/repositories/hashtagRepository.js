@@ -33,11 +33,13 @@ export async function getPostsByHashtag(hashtagId, page, limit) {
   const offset = limit * page - limit;
   return (
     await db.query(
-      `SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes
+      `SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes, COUNT(c."postId") as comments, COUNT(r."postId") as reposts
       from posts p
       JOIN "postsHashtags" ph ON p.id = ph."postId"
       join users u on u.id = p."userId"
       left join "postLikes" l on l."postId" = p.id
+      left join comments c on c."postId" = p.id
+      left join reposts r on r."originalPostId" = p.id
       WHERE ph."hashId" = $1
       group by p.id, u.id
       order by p."createdAt" desc LIMIT $2 OFFSET $3`,
