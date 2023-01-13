@@ -30,7 +30,7 @@ export async function listPostsQuery(usersIds, page = 1, limit = 10) {
       left join "postLikes" l on l."postId" = p.id
       left join comments c on c."postId" = p.id
       left join reposts r on r."originalPostId" = p.id
-      where u.id = ANY ($1)
+      where u.id = ANY ($1) 
       group by p.id, u.id
       order by p."createdAt" desc limit $2 offset $3`,
       [usersIds, limit, offset]
