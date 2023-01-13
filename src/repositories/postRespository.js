@@ -128,6 +128,17 @@ export async function getLasPostByUser(userId) {
   ).rows[0];
 }
 
+export async function getCommentList(postId) {
+  return db.query(`
+    SELECT c.comment, u.id as "userId", u.username, u."pictureUrl"
+    FROM comments c
+    JOIN users u
+      ON u.id=c."userId"
+    WHERE c."postId"=$1
+    ORDER BY c.id ASC
+  `, [postId])
+}
+
 export async function postCommentQuery(postId, user, comment) {
   return db.query(
     `

@@ -1,4 +1,4 @@
-import { followUserQuery, getFollowQuery, getUserQuery, unfollowUserQuery } from "../repositories/userRepository.js";
+import { followUserQuery, getFollowQuery, getFollowedList, getUserQuery, unfollowUserQuery } from "../repositories/userRepository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
 export async function getUser(req, res) {
@@ -82,6 +82,23 @@ export async function getFollow(req, res) {
     res.status(500).send({
       success: false,
       message: "Erro ao verificar se o usuário é seguido",
+      exception: err,
+    });
+  }
+
+}
+
+export async function getFollowList(req, res) {
+
+  const { user } = res.locals
+
+  try {
+    const follow = await getFollowedList(user.id)
+    res.status(200).send(follow.rows[0].followed)
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao verificar lista de usuários seguidos",
       exception: err,
     });
   }

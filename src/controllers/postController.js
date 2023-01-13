@@ -15,6 +15,7 @@ import {
   removeAllLikes,
   updatePost,
   getLasPostByUser,
+  getCommentList,
   postCommentQuery,
   selectUsersFollowing,
 } from "../repositories/postRespository.js";
@@ -167,6 +168,30 @@ export async function editPost(req, res) {
   }
 }
 
+export async function getComment(req, res) {
+
+  const { id } = req.params;
+
+  try {
+    const post = await findPost(id);
+
+    if (post.length === 0) {
+      return res.sendStatus(404)
+    } else {
+      const commentList = await getCommentList(id);
+      res.status(200).send(commentList.rows);
+    }
+
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao obter comentário",
+      exception: err,
+    });
+  }
+
+}
+
 export async function postComment(req, res) {
   const { user } = res.locals;
   const { id } = req.params;
@@ -179,6 +204,7 @@ export async function postComment(req, res) {
       return res.sendStatus(404);
     } else {
       await postCommentQuery(id, user, comment);
+      res.sendStatus(200);
     }
   } catch (err) {
     res.status(500).send({

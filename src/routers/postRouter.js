@@ -6,6 +6,7 @@ import {
   list,
   delPost,
   editPost,
+  getComment,
   postComment
 } from "../controllers/postController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
@@ -26,6 +27,7 @@ postRouter.get("/hashtag/:hashtag", getHashtagPost);
 postRouter.delete("/post/:id", authMiddleware, delPost);
 postRouter.put("/post/:postId", authMiddleware, editPost);
 
-postRouter.post('/post/comment/:id', authMiddleware, validationMiddleware(models.commentPOST), postComment)
+postRouter.get('/post/comment/:id', authMiddleware, getComment);
+postRouter.post('/post/comment/:id', authMiddleware, validationMiddleware(models.commentPOST), postComment);
 
 export default postRouter;
