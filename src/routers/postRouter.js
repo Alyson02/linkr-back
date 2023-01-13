@@ -8,6 +8,7 @@ import {
   editPost,
   postComment,
   repost,
+  getComment,
 } from "../controllers/postController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import validationMiddleware from "../middlewares/validationMiddleware.js";
@@ -26,12 +27,8 @@ postRouter.post("/like-or-dislike/:postId", authMiddleware, likeOrDislike);
 postRouter.get("/hashtag/:hashtag", getHashtagPost);
 postRouter.delete("/post/:id", authMiddleware, delPost);
 postRouter.put("/post/:postId", authMiddleware, editPost);
-postRouter.post(
-  "/post/comment/:id",
-  authMiddleware,
-  validationMiddleware(models.commentPOST),
-  postComment
-);
 postRouter.post("/posts/repost/:postId", authMiddleware, repost);
+postRouter.get('/post/comment/:id', authMiddleware, getComment);
+postRouter.post('/post/comment/:id', authMiddleware, validationMiddleware(models.commentPOST), postComment);
 
 export default postRouter;

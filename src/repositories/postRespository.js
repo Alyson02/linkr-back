@@ -10,7 +10,8 @@ export async function createPost(post) {
   ]);
 }
 
-export async function listPostsQuery(page = 1, limit = 10) {
+
+export async function listPostsQuery(usersIds, page = 1, limit = 10) {
   const offset = limit * page - limit;
   return (
     await db.query(
@@ -29,9 +30,10 @@ export async function listPostsQuery(page = 1, limit = 10) {
       left join "postLikes" l on l."postId" = p.id
       left join comments c on c."postId" = p.id
       left join reposts r on r."originalPostId" = p.id
+      where u.id = ANY ($1)
       group by p.id, u.id
-      order by p."createdAt" desc limit $1 offset $2`,
-      [limit, offset]
+      order by p."createdAt" desc limit $2 offset $3`,
+      [usersIds, limit, offset]
     )
   ).rows;
 }
@@ -119,6 +121,20 @@ export async function selectUsersLikedPost(postId, userId) {
   ).rows;
 }
 
+export async function selectUsersFollowing(userId){
+  return (
+    await db.query(
+      `
+        SELECT "userFollowerId", string_agg("userFollowedId"::text ,' , ') as followeds  FROM follows f
+        JOIN users u ON u.id = f."userFollowedId"
+        WHERE f."userFollowerId" = $1
+        group by "userFollowerId" ;
+      `,
+      [userId]
+    )
+  ).rows[0]?.followeds;
+}
+
 export async function numberLikes(postId, usersId) {
   const offset = 2;
   const placeholders = usersId
@@ -148,6 +164,17 @@ export async function getLastPostByUser(userId) {
       [userId]
     )
   ).rows[0];
+}
+
+export async function getCommentList(postId) {
+  return db.query(`
+    SELECT c.comment, u.id as "userId", u.username, u."pictureUrl"
+    FROM comments c
+    JOIN users u
+      ON u.id=c."userId"
+    WHERE c."postId"=$1
+    ORDER BY c.id ASC
+  `, [postId])
 }
 
 export async function postCommentQuery(postId, user, comment) {

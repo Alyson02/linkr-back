@@ -18,6 +18,8 @@ import {
   getLastPostByUser,
   postCommentQuery,
   insertRepost,
+  getCommentList,
+  selectUsersFollowing
 } from "../repositories/postRespository.js";
 import { listPostsWithLinkMetadata } from "../services/postService.js";
 
@@ -85,11 +87,15 @@ export async function delPost(req, res) {
 export async function list(req, res) {
   try {
     const user = res.locals.user;
+
+    let following = await selectUsersFollowing(user.id);
+    following = JSON.parse("[" + following + "]");
     const page = Number(req.query.page);
     const limit = Number(req.query.limit);
-    const posts = await listPostsQuery(page, limit);
-    res.send(await listPostsWithLinkMetadata(user, posts));
+    const posts = await listPostsQuery(following, page, limit)
+    res.send({posts:await listPostsWithLinkMetadata(user, posts),following:following});
   } catch (error) {
+    console.log(error);
     res.status(500).send({
       success: false,
       message: "Erro ao listar posts",
@@ -97,6 +103,7 @@ export async function list(req, res) {
     });
   }
 }
+
 
 export async function likeOrDislike(req, res) {
   try {
@@ -163,6 +170,30 @@ export async function editPost(req, res) {
   }
 }
 
+export async function getComment(req, res) {
+
+  const { id } = req.params;
+
+  try {
+    const post = await findPost(id);
+
+    if (post.length === 0) {
+      return res.sendStatus(404)
+    } else {
+      const commentList = await getCommentList(id);
+      res.status(200).send(commentList.rows);
+    }
+
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: "Erro ao obter comentário",
+      exception: err,
+    });
+  }
+
+}
+
 export async function postComment(req, res) {
   const { user } = res.locals;
   const { id } = req.params;
@@ -175,6 +206,7 @@ export async function postComment(req, res) {
       return res.sendStatus(404);
     } else {
       await postCommentQuery(id, user, comment);
+      res.sendStatus(200);
     }
   } catch (err) {
     res.status(500).send({
