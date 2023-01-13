@@ -9,6 +9,7 @@ import {
   postComment,
   repost,
   getComment,
+  count
 } from "../controllers/postController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import validationMiddleware from "../middlewares/validationMiddleware.js";
@@ -30,5 +31,6 @@ postRouter.put("/post/:postId", authMiddleware, editPost);
 postRouter.post("/posts/repost/:postId", authMiddleware, repost);
 postRouter.get('/post/comment/:id', authMiddleware, getComment);
 postRouter.post('/post/comment/:id', authMiddleware, validationMiddleware(models.commentPOST), postComment);
+postRouter.get("/posts/count",authMiddleware,count)
 
 export default postRouter;

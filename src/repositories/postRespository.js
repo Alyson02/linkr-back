@@ -205,3 +205,9 @@ export async function getIfPostIsRepost(postId, userId) {
     )
   ).rows;
 }
+
+export async function countPosts(){
+  return db.query(`
+    SELECT count(id) as num FROM posts
+  `)
+}
