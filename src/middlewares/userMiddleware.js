@@ -44,6 +44,16 @@ export async function validationUserName(req, res, next) {
 
         result.map(r => Number(r.following) !== Number(user.id) ? r.following = null : '')
 
+        function compare (a, b) {
+            if (a.following > b.following)
+                return -1;
+            if (a.following < b.following)
+                return 1;
+            return 0;
+        }
+
+        result.sort(compare);
+
         // console.log(result)
 
         if (result.length === 0) {
