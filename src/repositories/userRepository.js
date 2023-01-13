@@ -16,10 +16,17 @@ export async function getUserQuery(id, page = 1, limit = 10) {
   const offset = limit * page - limit;
   return db.query(
     `
-        SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username
+        SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username,
+        COUNT(l."postId") as likes, 
+        COUNT(c."postId") as comments,
+        COUNT(r."postId") as reposts
         FROM posts p
         JOIN users u ON u.id = p."userId"
+        left join "postLikes" l on l."postId" = p.id
+        left join comments c on c."postId" = p.id
+        left join reposts r on r."originalPostId" = p.id
         WHERE u.id=$1
+        group by p.id, u.id
         ORDER BY p."createdAt" DESC
         LIMIT $2
         OFFSET $3`,
