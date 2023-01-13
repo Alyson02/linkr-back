@@ -8,9 +8,10 @@ export async function getUser(req, res) {
     const limit = Number(req.query.limit);
 
     const { user } = res.locals;
-    console.log(user);
+    console.log(id)
 
     const posts = (await getUserQuery(id, page, limit)).rows;
+    console.log(posts)
 
     const postsWithLinkMetaData = await listPostsWithLinkMetadata(user, posts);
 
