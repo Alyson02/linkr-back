@@ -10,9 +10,12 @@ export async function createPost(post) {
   ]);
 }
 
-export async function listPostsQuery(usersIds) {
+
+export async function listPostsQuery(usersIds, page = 1, limit = 10) {
+  const offset = limit * page - limit;
   return (
-    await db.query(`
+    await db.query(
+      `
       SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes, COUNT(c."postId") as comments
       from posts p
       join users u on u.id = p."userId"
@@ -20,7 +23,9 @@ export async function listPostsQuery(usersIds) {
       left join comments c on c."postId" = p.id
       where u.id = ANY ($1)
       group by p.id, u.id
-      order by p."createdAt" desc limit 20`,[usersIds])
+      order by p."createdAt" desc limit $2 offset $3`,
+      [usersIds, limit, offset]
+    )
   ).rows;
 }
 export async function findPost(postId) {
@@ -124,7 +129,10 @@ export async function getLasPostByUser(userId) {
 }
 
 export async function postCommentQuery(postId, user, comment) {
-  return db.query(`
+  return db.query(
+    `
   INSERT INTO comments (comment, "postId", "userId") VALUES ($1, $2, $3)
-  `, [comment, postId, user.id])
+  `,
+    [comment, postId, user.id]
+  );
 }

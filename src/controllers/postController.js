@@ -9,13 +9,11 @@ import {
   createPost,
   getIfPostLikedByUser,
   listPostsQuery,
-  numberLikes,
   removeLike,
   findPost,
   deletePost,
   removeAllLikes,
   updatePost,
-  selectUsersLikedPost,
   getLasPostByUser,
   postCommentQuery,
   selectUsersFollowing,
@@ -86,9 +84,12 @@ export async function delPost(req, res) {
 export async function list(req, res) {
   try {
     const user = res.locals.user;
+
     let following = await selectUsersFollowing(user.id);
     following = JSON.parse("[" + following + "]");
-    const posts = await listPostsQuery(following)
+    const page = Number(req.query.page);
+    const limit = Number(req.query.limit);
+    const posts = await listPostsQuery(following, page, limit)
     res.send({posts:await listPostsWithLinkMetadata(user, posts),following:following});
   } catch (error) {
     console.log(error);
@@ -167,21 +168,18 @@ export async function editPost(req, res) {
 }
 
 export async function postComment(req, res) {
-
-  const { user } = res.locals
-  const { id } = req.params
-  const { comment } = req.body
+  const { user } = res.locals;
+  const { id } = req.params;
+  const { comment } = req.body;
 
   try {
-
-    const post = await findPost(id)
+    const post = await findPost(id);
 
     if (post.length === 0) {
-      return res.sendStatus(404)
+      return res.sendStatus(404);
     } else {
-      await postCommentQuery(id, user, comment)
+      await postCommentQuery(id, user, comment);
     }
-
   } catch (err) {
     res.status(500).send({
       success: false,
@@ -189,5 +187,4 @@ export async function postComment(req, res) {
       exception: err,
     });
   }
-
 }

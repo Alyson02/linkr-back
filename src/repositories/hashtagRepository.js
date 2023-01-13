@@ -1,7 +1,7 @@
 import connectDB from "../db.js";
 const db = await connectDB();
 
-export async function listHashtags() {
+export async function listHashtags(page = 1, limit = 10) {
   return db.query(`
     SELECT
       h.name,
@@ -29,7 +29,8 @@ export async function getHashtag(hashtag) {
     .rows;
 }
 
-export async function getPostsByHashtag(hashtagId) {
+export async function getPostsByHashtag(hashtagId, page, limit) {
+  const offset = limit * page - limit;
   return (
     await db.query(
       `SELECT p.id, p.link, p.content, u."pictureUrl" as "userImage", u.username, p."userId", COUNT(l."postId") as likes
@@ -39,8 +40,8 @@ export async function getPostsByHashtag(hashtagId) {
       left join "postLikes" l on l."postId" = p.id
       WHERE ph."hashId" = $1
       group by p.id, u.id
-      order by p."createdAt" desc limit 20`,
-      [hashtagId]
+      order by p."createdAt" desc LIMIT $2 OFFSET $3`,
+      [hashtagId, limit, offset]
     )
   ).rows;
 }
